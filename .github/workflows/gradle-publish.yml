@@ -25,10 +25,10 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests requests-toolbelt # requests-toolbelt jest nadal potrzebny dla retries
+          pip install requests requests-toolbelt
 
-      # 4. Generate bundle.json directly in workflow
-      - name: Generate bundle.json
+      # 4. Generate bundles.json
+      - name: Generate bundles.json
         run: |
           python - << 'EOF'
           import json
@@ -38,17 +38,17 @@ jobs:
           from urllib3.util.retry import Retry
 
           # Konfiguracja ponawiania prób
-          retries = Retry(total=5,  # Całkowita liczba ponownych prób
-                          backoff_factor=0.5, # Czas oczekiwania między próbami (0.5s, 1s, 2s, 4s, 8s)
-                          status_forcelist=[500, 502, 503, 504], # Kody statusu, dla których ponawiać
-                          allowed_methods=["GET"]) # Metody HTTP, dla których ponawiać
+          retries = Retry(total=5,
+                          backoff_factor=0.5,
+                          status_forcelist=[500, 502, 503, 504, 404], # Dodano 404 do ponownych prób
+                          allowed_methods=["GET"])
 
           adapter = HTTPAdapter(max_retries=retries)
           http = requests.Session()
           http.mount("https://", adapter)
           http.mount("http://", adapter)
 
-          # Lista URL-i do "bundle" plików, które zawierają linki do właściwych patchy
+          # Lista URL-i, które potencjalnie zawierają odnośniki do patchy LUB są same listą patchy
           bundle_urls = [
               # ReVanced-Patches-Bundle
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/revanced-patch-bundles/revanced-latest-patches-bundle.json",
@@ -67,8 +67,8 @@ jobs:
               # Piko-Patches-Bundle
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/piko-patch-bundles/piko-latest-patches-bundle.json",
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/piko-patch-bundles/piko-stable-patches-bundle.json",
-              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/piko-dev-patches-bundle.json",
-              
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/piko-dev-patches-bundle.json", # Sprawdź ten link, może zwracać 404
+
               # BiliRoamingM-Patches-Bundle
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/biliroamingm-patch-bundles/biliroamingm-latest-patches-bundle.json",
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/biliroamingm-patch-bundles/biliroamingm-stable-patches-bundle.json",
@@ -77,7 +77,7 @@ jobs:
               # Slenderman00-Patches-Bundle
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/slenderman00-patch-bundles/slenderman00-latest-patches-bundle.json",
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/slenderman00-patch-bundles/slenderman00-stable-patches-bundle.json",
-              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/slenderman00-patch-bundles/slenderman00-dev-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/slenderman00-patch-bundles/slenderman00-dev-patches-bundle.json", # Sprawdź ten link, może zwracać 404
 
               # Privacy-Patches-Bundle
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/privacy-patch-bundles/privacy-latest-patches-bundle.json",
@@ -92,7 +92,7 @@ jobs:
               # Dropped-Patches-Bundle
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/dropped-patch-bundles/dropped-latest-patches-bundle.json",
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/dropped-patch-bundles/dropped-stable-patches-bundle.json",
-              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/dropped-dev-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/dropped-patch-bundles/dropped-dev-patches-bundle.json",
 
               # Wchill-Patches-Bundle
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/wchill-patch-bundles/wchill-latest-patches-bundle.json",
@@ -117,17 +117,17 @@ jobs:
               # ReX-Patches-Bundle
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/rex-patch-bundles/rex-latest-patches-bundle.json",
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/rex-patch-bundles/rex-stable-patches-bundle.json",
-              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/rex-dev-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/rex-dev-patches-bundle.json", # Sprawdź ten link, może zwracać 404
 
               # Rufusin-Patches-Bundle
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/rufusin-patch-bundles/rufusin-latest-patches-bundle.json",
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/rufusin-patch-bundles/rufusin-stable-patches-bundle.json",
-              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/rufusin-dev-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/rufusin-dev-patches-bundle.json", # Sprawdź ten link, może zwracać 404
 
               # Twitter-Patches-Bundle
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/twitter-patch-bundles/twitter-latest-patches-bundle.json",
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/twitter-patch-bundles/twitter-stable-patches-bundle.json",
-              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/twitter-dev-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/twitter-dev-patches-bundle.json", # Sprawdź ten link, może zwracać 404
 
               # Wyse--Patches-Bundle
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/wyse--patch-bundles/wyse--latest-patches-bundle.json",
@@ -169,7 +169,7 @@ jobs:
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/lennyRBLX-patch-bundles/lennyRBLX-stable-patches-bundle.json",
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/lennyRBLX-patch-bundles/lennyRBLX-dev-patches-bundle.json",
               
-              # Korhelyleves, Taknok, Sti-233 - Brak linków do plików JSON, pominięto
+              # Korhelyleves, Taknok, Sti-233 - Brak linków do plików JSON, pominięto w Twoim tekście, więc nadal je pomijam
               
               # Faith001-Patches-Bundle
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/faith001-patch-bundles/faith001-latest-patches-bundle.json",
@@ -203,105 +203,185 @@ jobs:
           ]
 
           all_patches = []
-          successfully_fetched_bundle_urls = []
+          successfully_processed_bundle_urls = []
           total_patches_before_deduplication = 0
 
-          for bundle_url in bundle_urls:
-              print(f"Pobieranie listy patchy z bundle URL: {bundle_url}")
+          # Funkcja pomocnicza do pobierania i parsowania JSON
+          def fetch_json(url):
               try:
-                  response = http.get(bundle_url, timeout=20) # Zwiększono timeout
+                  response = http.get(url, timeout=25) # Zwiększono timeout dla wewnętrznych pobierań
                   response.raise_for_status()
-                  bundle_data = response.json()
-                  
-                  if isinstance(bundle_data, list):
-                      # Iteruj przez elementy bundle, które powinny zawierać 'url' do właściwych patchy
-                      for item in bundle_data:
-                          if isinstance(item, dict) and "url" in item:
-                              patch_list_url = item["url"]
-                              print(f"  Pobieranie właściwych patchy z: {patch_list_url}")
-                              try:
-                                  patch_response = http.get(patch_list_url, timeout=20)
-                                  patch_response.raise_for_status()
-                                  patches_from_url = patch_response.json()
-
-                                  if isinstance(patches_from_url, list):
-                                      for p in patches_from_url:
-                                          if isinstance(p, dict):
-                                              all_patches.append(p)
-                                              total_patches_before_deduplication += 1 # Licz każdy dodany patch
-                                          else:
-                                              print(f"    Ostrzeżenie: Znaleziono nieprawidłowy element (nie słownik) w liście patchy z {patch_list_url}: {p}. Pomijam.", file=sys.stderr)
-                                      print(f"    Pobrano {len(patches_from_url)} patchy z {patch_list_url} (po wstępnym filtrowaniu).")
-                                  elif isinstance(patches_from_url, dict) and "patches" in patches_from_url:
-                                      # Ensure 'patches' key contains a list
-                                      if isinstance(patches_from_url["patches"], list):
-                                          for p in patches_from_url["patches"]:
-                                              if isinstance(p, dict):
-                                                  all_patches.append(p)
-                                                  total_patches_before_deduplication += 1 # Licz każdy dodany patch
-                                              else:
-                                                  print(f"    Ostrzeżenie: Znaleziono nieprawidłowy element (nie słownik) w liście patchy z {patch_list_url} (z klucza 'patches'): {p}. Pomijam.", file=sys.stderr)
-                                          print(f"    Pobrano {len(patches_from_url['patches'])} patchy z {patch_list_url} (z klucza 'patches', po wstępnym filtrowaniu).")
-                                      else:
-                                          print(f"    Ostrzeżenie: Klucz 'patches' w {patch_list_url} nie zawiera listy. Zawartość: {patches_from_url['patches']}. Pomijam.", file=sys.stderr)
-                                  else:
-                                      print(f"    Ostrzeżenie: Nieoczekiwana struktura JSON w pliku patchy z {patch_list_url}. Oczekiwano listy lub obiektu z kluczem 'patches'.", file=sys.stderr)
-                                      print(f"    Zawartość odpowiedzi (początek): {patch_response.text[:500]}...", file=sys.stderr)
-
-                              except requests.exceptions.Timeout:
-                                  print(f"    Błąd: Przekroczono czas oczekiwania podczas pobierania patchy z {patch_list_url}.", file=sys.stderr)
-                              except requests.exceptions.RequestException as e:
-                                  print(f"    Błąd podczas pobierania patchy z {patch_list_url}: {e}", file=sys.stderr)
-                              except json.JSONDecodeError as e:
-                                  print(f"    Błąd dekodowania JSON z {patch_list_url}: {e}", file=sys.stderr)
-                                  print(f"    Zawartość odpowiedzi (początek): {patch_response.text[:500]}...", file=sys.stderr)
-                              except Exception as e:
-                                  print(f"    Wystąpił nieoczekiwany błąd podczas przetwarzania {patch_list_url}: {e}", file=sys.stderr)
-                          else:
-                              print(f"  Ostrzeżenie: Element w bundle {bundle_url} nie zawiera klucza 'url' lub nie jest słownikiem: {item}. Pomijam.", file=sys.stderr)
-                      successfully_fetched_bundle_urls.append(bundle_url)
-                  else:
-                      print(f"  Ostrzeżenie: Główny bundle {bundle_url} ma nieoczekiwaną strukturę. Oczekiwano listy obiektów z kluczem 'url'.", file=sys.stderr)
+                  return response.json()
+              except (requests.exceptions.RequestException, json.JSONDecodeError) as e:
+                  print(f"  Błąd podczas pobierania lub dekodowania JSON z {url}: {e}", file=sys.stderr)
+                  if 'response' in locals() and response:
                       print(f"  Zawartość odpowiedzi (początek): {response.text[:500]}...", file=sys.stderr)
-
-              except requests.exceptions.Timeout:
-                  print(f"  Błąd: Przekroczono czas oczekiwania podczas pobierania bundle z {bundle_url}.", file=sys.stderr)
-              except requests.exceptions.RequestException as e:
-                  print(f"  Błąd podczas pobierania bundle z {bundle_url}: {e}", file=sys.stderr)
-              except json.JSONDecodeError as e:
-                  print(f"  Błąd dekodowania JSON z bundle {bundle_url}: {e}", file=sys.stderr)
-                  print(f"  Zawartość odpowiedzi (początek): {response.text[:500]}...", file=sys.stderr)
+                  return None
               except Exception as e:
-                  print(f"  Wystąpił nieoczekiwany błąd podczas przetwarzania bundle {bundle_url}: {e}", file=sys.stderr)
+                  print(f"  Wystąpił nieoczekiwany błąd podczas przetwarzania {url}: {e}", file=sys.stderr)
+                  return None
 
-          # Usunięto deduplikację, aby upewnić się, że wszystkie patche są dodawane.
-          # Jeśli potrzebujesz deduplikacji, musisz zdefiniować naprawdę unikalny klucz dla patchy.
-          final_patches_list = all_patches
-          
+
+          for bundle_url in bundle_urls:
+              print(f"\nPrzetwarzanie bundle URL: {bundle_url}")
+              bundle_data = fetch_json(bundle_url)
+
+              if bundle_data is None:
+                  print(f"  Pominięto {bundle_url} z powodu błędu pobierania lub parsowania.")
+                  continue
+
+              potential_patch_urls = []
+              
+              if isinstance(bundle_data, list):
+                  # To jest scenariusz "lista obiektów z kluczem 'url'" (rzadko spotykany dla Jman-Github bezpośrednio)
+                  for item in bundle_data:
+                      if isinstance(item, dict) and "url" in item:
+                          # Sprawdź, czy URL wskazuje na JSON, a nie na JAR/RVP
+                          if str(item["url"]).endswith(".json"):
+                              potential_patch_urls.append(item["url"])
+                          else:
+                              print(f"  Ostrzeżenie: Element bundle {bundle_url} zawiera URL, który nie jest plikiem JSON ({item['url']}). Pomijam.", file=sys.stderr)
+                      else:
+                          print(f"  Ostrzeżenie: Element w bundle {bundle_url} nie zawiera klucza 'url' lub nie jest słownikiem: {item}. Pomijam.", file=sys.stderr)
+              
+              elif isinstance(bundle_data, dict):
+                  # To jest typowy scenariusz "metadane wydania" z download_url
+                  # LUB "patches": { "url": ... } struktura
+                  
+                  # Sprawdzamy, czy to jest bezpośrednia definicja patchy (jak w inotia00/patches.json)
+                  if "patches" in bundle_data and isinstance(bundle_data["patches"], list):
+                      for p in bundle_data["patches"]:
+                          if isinstance(p, dict):
+                              all_patches.append(p)
+                              total_patches_before_deduplication += 1
+                          else:
+                              print(f"  Ostrzeżenie: Znaleziono nieprawidłowy element (nie słownik) w zagnieżdżonej liście patchy z {bundle_url}: {p}. Pomijam.", file=sys.stderr)
+                      print(f"  Pobrano bezpośrednio {len(bundle_data['patches'])} patchy z {bundle_url}.")
+                  
+                  # Sprawdzamy strukturę { "patches": { "url": "..." }, "integrations": { "url": "..." } }
+                  elif "patches" in bundle_data and isinstance(bundle_data["patches"], dict) and "url" in bundle_data["patches"]:
+                      if str(bundle_data["patches"]["url"]).endswith(".json"):
+                          potential_patch_urls.append(bundle_data["patches"]["url"])
+                      else: # Może to być link do JAR/RVP
+                          print(f"  Ostrzeżenie: 'patches' URL w {bundle_url} nie jest plikiem JSON: {bundle_data['patches']['url']}. Pomijam.", file=sys.stderr)
+
+                  # Sprawdzamy ogólny download_url
+                  elif "download_url" in bundle_data:
+                      if str(bundle_data["download_url"]).endswith(".json"):
+                          potential_patch_urls.append(bundle_data["download_url"])
+                      else: # To jest najczęstszy przypadek dla Jman-Github Release JSONs - link do JAR/RVP
+                          print(f"  Ostrzeżenie: 'download_url' w {bundle_url} nie jest plikiem JSON: {bundle_data['download_url']}. Pomijam.", file=sys.stderr)
+                  
+                  else:
+                      print(f"  Ostrzeżenie: Główny bundle {bundle_url} ma nieznaną strukturę słownika. Zawartość odpowiedzi (początek): {json.dumps(bundle_data)[:500]}", file=sys.stderr)
+
+              else:
+                  print(f"  Ostrzeżenie: Główny bundle {bundle_url} ma nieoczekiwaną strukturę (ani lista, ani słownik). Typ: {type(bundle_data)}. Pomijam.", file=sys.stderr)
+                  continue # Przejdź do następnego URL
+
+
+              # Pobierz rzeczywiste patche z znalezionych URL-i patchlist
+              for patch_list_url in potential_patch_urls:
+                  print(f"  Przetwarzanie zagnieżdżonej listy patchy z: {patch_list_url}")
+                  patches_from_url = fetch_json(patch_list_url)
+
+                  if patches_from_url is None:
+                      print(f"    Pominięto {patch_list_url} z powodu błędu pobierania lub parsowania.", file=sys.stderr)
+                      continue
+                  
+                  if isinstance(patches_from_url, list):
+                      for p in patches_from_url:
+                          if isinstance(p, dict):
+                              all_patches.append(p)
+                              total_patches_before_deduplication += 1
+                          else:
+                              print(f"    Ostrzeżenie: Znaleziono nieprawidłowy element (nie słownik) w liście patchy z {patch_list_url}: {p}. Pomijam.", file=sys.stderr)
+                      print(f"    Pobrano {len(patches_from_url)} patchy z {patch_list_url}.")
+                  elif isinstance(patches_from_url, dict) and "patches" in patches_from_url and isinstance(patches_from_url["patches"], list):
+                      for p in patches_from_url["patches"]:
+                          if isinstance(p, dict):
+                              all_patches.append(p)
+                              total_patches_before_deduplication += 1
+                          else:
+                              print(f"    Ostrzeżenie: Znaleziono nieprawidłowy element (nie słownik) w zagnieżdżonej liście patchy (z klucza 'patches') z {patch_list_url}: {p}. Pomijam.", file=sys.stderr)
+                      print(f"    Pobrano {len(patches_from_url['patches'])} patchy z {patch_list_url} (z klucza 'patches').")
+                  else:
+                      print(f"    Ostrzeżenie: Nieoczekiwana struktura JSON dla ostatecznych patchy z {patch_list_url}. Oczekiwano listy lub obiektu z kluczem 'patches'.", file=sys.stderr)
+                      # Nie wypisujemy tu zawartości, bo była już w fetch_json w przypadku błędu.
+              
+              if bundle_data is not None: # Tylko jeśli główny bundle został pomyślnie przetworzony
+                 successfully_processed_bundle_urls.append(bundle_url) # Liczymy pomyślne przetworzenie bundle
+
+
+          # Deduplikacja jest włączona ponownie, bo będzie dużo duplikatów z różnych źródeł
+          # Jeśli patche mają unikalne ID, użyj go. Inaczej kombinacja 'name' i 'target_package'
+          # jest najlepszą opcją dla typowych patchy ReVanced (np. 'General ads' dla 'com.google.android.youtube')
+          final_patches_list = []
+          seen_patch_ids = set()
+
+          for patch in all_patches:
+              # Sprawdź czy patch to słownik i ma klucz 'name'
+              if isinstance(patch, dict) and "name" in patch:
+                  patch_name = patch["name"]
+                  target_package = ""
+                  # Próbuj uzyskać nazwę pakietu celu
+                  if "targets" in patch and isinstance(patch["targets"], list) and len(patch["targets"]) > 0:
+                      if isinstance(patch["targets"][0], dict) and "name" in patch["targets"][0]:
+                          target_package = patch["targets"][0]["name"]
+                  
+                  # Użyj kombinacji nazwy patcha i nazwy pakietu jako ID
+                  patch_id = f"{patch_name}|{target_package}"
+                  
+                  if patch_id not in seen_patch_ids:
+                      final_patches_list.append(patch)
+                      seen_patch_ids.add(patch_id)
+                  else:
+                      print(f"  Info: Znaleziono duplikat patcha '{patch_id}'. Pomijam.", file=sys.stderr)
+              else:
+                  print(f"  Ostrzeżenie: Patch bez klucza 'name' lub niepoprawny format podczas deduplikacji: {patch}. Dodaję bez deduplikacji.", file=sys.stderr)
+                  # Dodaj, jeśli nie ma nazwy, ale z ryzykiem duplikacji.
+                  # Możesz to zmienić na `pass` aby całkowicie pominąć nieprawidłowe patche.
+                  final_patches_list.append(patch) # Dodaj go, jeśli nie da się go unikalnie zidentyfikować, choć to ryzyko duplikacji
+
           # Przygotowanie finalnego bundle
-          bundles = {
+          bundles_content = {
               "version": "1.0",
               "patches": final_patches_list
           }
 
           # Zapis do bundles.json
-          with open("bundlesx.json", "w", encoding="utf-8") as f:
-              json.dump(bundles, f, ensure_ascii=False, indent=2)
+          with open("bundlesxa.json", "w", encoding="utf-8") as f:
+              json.dump(bundles_content, f, ensure_ascii=False, indent=2)
           
           # Dodaj log, aby sprawdzić, ile patchy zostało zapisanych
           print(f"\n--- Podsumowanie ---")
-          print(f"Pomyślnie pobrano dane z {len(successfully_fetched_bundle_urls)}/{len(bundle_urls)} głównych źródeł bundle.")
-          print(f"Zapisano łącznie {len(final_patches_list)} patchy do bundles.json (przed de-duplikacją było {total_patches_before_deduplication}).")
-          if len(successfully_fetched_bundle_urls) < len(bundle_urls):
-              print("Niektóre główne URL-e bundle mogły się nie powieść lub miały nieoczekiwaną strukturę. Sprawdź logi powyżej.")
+          print(f"Pomyślnie przetworzono dane z {len(successfully_processed_bundle_urls)}/{len(bundle_urls)} głównych źródeł bundle.")
+          print(f"Zapisano łącznie {len(final_patches_list)} unikalnych patchy do bundles.json (pobranych przed deduplikacją: {total_patches_before_deduplication}).")
+          if len(successfully_processed_bundle_urls) < len(bundle_urls):
+              print("Niektóre główne URL-e bundle mogły się nie powieść, miały nieoczekiwaną strukturę lub nie zawierały linków do patch-list JSON. Sprawdź logi powyżej.")
 
           EOF
 
-      # 5. Commit & push generated bundle.json
+      # 5. Wyświetl zawartość bundles.json (dla debugowania i kopiowania)
+      - name: Display bundles.json content
+        run: |
+          echo "--- Zawartość bundles.json ---"
+          cat bundlesxa.json
+          echo "-----------------------------"
+
+      # 6. Commit & push generated bundles.json (Dodano opcję force-with-lease dla usunięcia/zastąpienia pliku)
       - name: Commit bundles.json
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git add bundlesx.json
-          git commit -m "Update bundles.json [ci skip]" || echo "No changes to commit"
-          git push
+          
+          # Sprawdź, czy bundles.json został zmodyfikowany lub utworzony
+          if git diff --exit-code --quiet bundles.json; then
+            echo "bundles.json has no changes to commit."
+          else
+            git add bundlesxa.json
+            git commit -m "Update bundles.json [ci skip]"
+            # Użyj --force-with-lease aby zaktualizować plik nawet jeśli są rozbieżności, ale bezpieczniej niż --force
+            git push origin main --force-with-lease
+            echo "bundles.json committed and pushed."
+          fi
