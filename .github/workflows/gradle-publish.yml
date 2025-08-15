@@ -33,46 +33,221 @@ jobs:
           python - << 'EOF'
           import json
           import requests
-          import sys # Import sys for better error handling
+          import sys
 
-          # Zmieniony URL na źródło z patcheami ReVanced
-          # Możesz użyć alternatywnych źródeł, np.
-          # "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/main/ReVanced-Patches-Bundle.json"
-          # "https://raw.githubusercontent.com/inotia00/revanced-patches/main/patches.json"
-          url = "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/main/ReVanced-Patches-Bundle.json" 
+          # Lista wszystkich URL-i do patchy, zebrana z Twojego obszernego zestawienia
+          patch_urls = [
+              # ReVanced-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/revanced-patch-bundles/revanced-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/revanced-patch-bundles/revanced-dev-patches-bundle.json",
+              
+              # Inotia00-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/inotia00-patch-bundles/inotia00-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/inotia00-patch-bundles/inotia00-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/inotia00-patch-bundles/inotia00-dev-patches-bundle.json",
+              
+              # Anddea-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/anddea-patch-bundles/anddea-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/anddea-patch-bundles/anddea-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/anddea-patch-bundles/anddea-dev-patches-bundle.json",
+              
+              # Piko-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/piko-patch-bundles/piko-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/piko-patch-bundles/piko-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/piko-patch-bundles/piko-dev-patches-bundle.json",
+              
+              # BiliRoamingM-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/biliroamingm-patch-bundles/biliroamingm-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/biliroamingm-patch-bundles/biliroamingm-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/biliroamingm-patch-bundles/biliroamingm-dev-patches-bundle.json",
+              
+              # Slenderman00-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/slenderman00-patch-bundles/slenderman00-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/slenderman00-patch-bundles/slenderman00-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/slenderman00-patch-bundles/slenderman00-dev-patches-bundle.json",
+
+              # Privacy-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/privacy-patch-bundles/privacy-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/privacy-patch-bundles/privacy-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/privacy-patch-bundles/privacy-dev-patches-bundle.json",
+
+              # Experimental-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/experimental-patch-bundles/experimental-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/experimental-patch-bundles/experimental-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/experimental-patch-bundles/experimental-dev-patches-bundle.json",
+
+              # Dropped-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/dropped-patch-bundles/dropped-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/dropped-patch-bundles/dropped-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/dropped-patch-bundles/dropped-dev-patches-bundle.json",
+
+              # Wchill-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/wchill-patch-bundles/wchill-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/wchill-patch-bundles/wchill-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/wchill-patch-bundles/wchill-dev-patches-bundle.json",
+
+              # Kitadai31-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/kitadai31-patch-bundles/kitadai31-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/kitadai31-patch-bundles/kitadai31-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/kitadai31-patch-bundles/kitadai31-dev-patches-bundle.json",
+
+              # BholeyKaBhakt-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/bholeykabhakt-patch-bundles/bholeykabhakt-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/bholeykabhakt-patch-bundles/bholeykabhakt-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/bholeykabhakt-patch-bundles/bholeykabhakt-dev-patches-bundle.json",
+
+              # Andronedev-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/andronedev-patch-bundles/andronedev-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/andronedev-patch-bundles/andronedev-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/andronedev-patch-bundles/andronedev-dev-patches-bundle.json",
+
+              # ReX-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/rex-patch-bundles/rex-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/rex-patch-bundles/rex-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/rex-patch-bundles/rex-dev-patches-bundle.json",
+
+              # Rufusin-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/rufusin-patch-bundles/rufusin-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/rufusin-patch-bundles/rufusin-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/rufusin-patch-bundles/rufusin-dev-patches-bundle.json",
+
+              # Twitter-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/twitter-patch-bundles/twitter-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/twitter-patch-bundles/twitter-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/twitter-patch-bundles/twitter-dev-patches-bundle.json",
+
+              # Wyse--Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/wyse--patch-bundles/wyse--latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/wyse--patch-bundles/wyse--stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/wyse--patch-bundles/wyse--dev-patches-bundle.json",
+
+              # 1fexd-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/1fexd-patch-bundles/1fexd-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/1fexd-patch-bundles/1fexd-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/1fexd-patch-bundles/1fexd-dev-patches-bundle.json",
+
+              # Whyvl-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/whyvl-patch-bundles/whyvl-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/whyvl-patch-bundles/whyvl-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/whyvl-patch-bundles/whyvl-dev-patches-bundle.json",
+
+              # Xrogers-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/xrogers-patch-bundles/xrogers-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/xrogers-patch-bundles/xrogers-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/xrogers-patch-bundles/xrogers-dev-patches-bundle.json",
+
+              # D4n3436-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/d4n3436-patch-bundles/d4n3436-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/d4n3436-patch-bundles/d4n3436-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/d4n3436-patch-bundles/d4n3436-dev-patches-bundle.json",
+
+              # AyushTNM-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/ayushtnm-patch-bundles/ayushtnm-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/ayushtnm-patch-bundles/ayushtnm-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/ayushtnm-patch-bundles/ayushtnm-dev-patches-bundle.json",
+
+              # Arsclib-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/arsclib-patch-bundles/arsclib-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/arsclib-patch-bundles/arsclib-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/arsclib-patch-bundles/arsclib-dev-patches-bundle.json",
+
+              # LennyRBLX-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/lennyRBLX-patch-bundles/lennyRBLX-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/lennyRBLX-patch-bundles/lennyRBLX-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/lennyRBLX-patch-bundles/lennyRBLX-dev-patches-bundle.json",
+              
+              # Korhelyleves, Taknok, Sti-233 - Brak linków do plików JSON, pominięto
+              
+              # Faith001-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/faith001-patch-bundles/faith001-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/faith001-patch-bundles/faith001-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/faith001-patch-bundles/faith001-dev-patches-bundle.json",
+
+              # Forsyth47-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/forsyth47-patch-bundles/forsyth47-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/forsyth47-patch-bundles/forsyth47-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/forsyth47-patch-bundles/forsyth47-dev-patches-bundle.json",
+
+              # Brosssh-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/brosssh-patch-bundles/brosssh-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/brosssh-patch-bundles/brosssh-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/brosssh-patch-bundles/brossshh47-dev-patches-bundle.json", # Uwaga: tutaj był błąd "brossshh47" zamiast "brosssh" w Twoim tekscie, zakładam że to literówka w orginale.
+
+              # Hoo-dles-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/hoo-dles-patch-bundles/hoo-dles-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/hoo-dles-patch-bundles/hoo-dles-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/hoo-dles-patch-bundles/hoo-dles-dev-patches-bundle.json",
+
+              # Scrazzz-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/scrazzz-patch-bundles/scrazzz-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/scrazzz-patch-bundles/scrazzz-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/scrazzz-patch-bundles/scrazzz-dev-patches-bundle.json",
+
+              # VinceTheProgrammer-Patches-Bundle
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/vinceTheProgrammer-patch-bundles/vinceTheProgrammer-latest-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/vinceTheProgrammer-patch-bundles/vinceTheProgrammer-stable-patches-bundle.json",
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/vinceTheProgrammer-patch-bundles/vinceTheProgrammer-dev-patches-bundle.json"
+          ]
+
+          all_patches = []
+          successfully_fetched_urls = []
+
+          for url in patch_urls:
+              print(f"Pobieranie patchy z: {url}")
+              try:
+                  response = requests.get(url, timeout=10) # Dodano timeout
+                  response.raise_for_status() # Sprawdź, czy żądanie było udane (status code 2xx)
+                  patches_data = response.json()
+                  
+                  current_patches_count = 0
+                  # Sprawdź strukturę JSON: czy to bezpośrednio lista, czy słownik z kluczem 'patches'
+                  if isinstance(patches_data, list):
+                      all_patches.extend(patches_data)
+                      current_patches_count = len(patches_data)
+                  elif isinstance(patches_data, dict) and "patches" in patches_data:
+                      all_patches.extend(patches_data["patches"])
+                      current_patches_count = len(patches_data["patches"])
+                  else:
+                      print(f"  Ostrzeżenie: Nieoczekiwana struktura JSON z {url}. Oczekiwano listy lub obiektu z kluczem 'patches'.", file=sys.stderr)
+                  
+                  if current_patches_count > 0:
+                      print(f"  Pobrano {current_patches_count} patchy z {url}.")
+                      successfully_fetched_urls.append(url)
+                  else:
+                      print(f"  Brak patchy lub nieprawidłowa struktura z {url}.")
+
+              except requests.exceptions.Timeout:
+                  print(f"  Błąd: Przekroczono czas oczekiwania podczas pobierania z {url}.", file=sys.stderr)
+              except requests.exceptions.RequestException as e:
+                  print(f"  Błąd podczas pobierania patchy z {url}: {e}", file=sys.stderr)
+              except json.JSONDecodeError as e:
+                  print(f"  Błąd dekodowania JSON z {url}: {e}", file=sys.stderr)
+                  # Wypisz część odpowiedzi, aby pomóc w debugowaniu
+                  print(f"  Zawartość odpowiedzi (początek): {response.text[:500]}...", file=sys.stderr) 
+              except Exception as e:
+                  print(f"  Wystąpił nieoczekiwany błąd podczas przetwarzania {url}: {e}", file=sys.stderr)
+
+          # Opcjonalnie: Usuwanie duplikatów (jeśli to konieczne)
+          # To wymaga, aby każdy patch miał unikalny identyfikator (np. 'name')
+          # Jeśli "name" nie jest wystarczająco unikalne, potrzebne byłoby bardziej złożone ID.
+          unique_patches = []
+          seen_patch_names = set() 
           
-          try:
-              response = requests.get(url)
-              response.raise_for_status() # Sprawdź, czy żądanie było udane (status code 2xx)
-              patches_data = response.json()
-              
-              # W zależności od struktury JSON ze źródła, może być konieczne 
-              # dostosowanie, aby uzyskać samą listę patchy.
-              # Przykładowo, jeśli JSON ma klucz "patches", użyj patches_data["patches"].
-              # Jeśli jest to bezpośrednio lista, użyj patches_data.
-              
-              # Sprawdź strukturę JSON z Jman-Github/ReVanced-Patch-Bundles
-              # Zakładamy, że to bezpośrednio lista patchy lub ma klucz 'patches'
-              if isinstance(patches_data, list):
-                  patches = patches_data
-              elif isinstance(patches_data, dict) and "patches" in patches_data:
-                  patches = patches_data["patches"]
-              else:
-                  print(f"Ostrzeżenie: Nieoczekiwana struktura JSON z {url}. Oczekiwano listy lub obiektu z kluczem 'patches'.", file=sys.stderr)
-                  patches = []
-
-          except requests.exceptions.RequestException as e:
-              print(f"Błąd podczas pobierania patchy z {url}: {e}", file=sys.stderr)
-              patches = []
-          except json.JSONDecodeError as e:
-              print(f"Błąd dekodowania JSON z {url}: {e}", file=sys.stderr)
-              print(f"Zawartość odpowiedzi: {response.text[:500]}...", file=sys.stderr) # Wypisz część odpowiedzi
-              patches = []
-
-          # Przygotowanie bundle
+          for patch in all_patches:
+              patch_id = patch.get("name") # Użyj nazwy jako ID
+              if patch_id and patch_id not in seen_patch_names:
+                  unique_patches.append(patch)
+                  seen_patch_names.add(patch_id)
+              elif not patch_id:
+                  # Jeśli patch nie ma nazwy, zawsze go dodaj, lub zaimplementuj inną logikę
+                  unique_patches.append(patch)
+          
+          final_patches_list = unique_patches
+          
+          # Przygotowanie finalnego bundle
           bundle = {
               "version": "1.0",
-              "patches": patches
+              "patches": final_patches_list
           }
 
           # Zapis do bundle.json
@@ -80,7 +255,12 @@ jobs:
               json.dump(bundle, f, ensure_ascii=False, indent=2)
           
           # Dodaj log, aby sprawdzić, ile patchy zostało zapisanych
-          print(f"Zapisano {len(patches)} patchy do bundle.json")
+          print(f"\n--- Podsumowanie ---")
+          print(f"Pomyślnie pobrano dane z {len(successfully_fetched_urls)}/{len(patch_urls)} źródeł.")
+          print(f"Zapisano łącznie {len(final_patches_list)} unikalnych patchy do bundle.json (przed de-duplikacją było {len(all_patches)}).")
+          if len(successfully_fetched_urls) < len(patch_urls):
+              print("Niektóre URL-e mogły się nie powieść. Sprawdź logi powyżej.")
+
           EOF
 
       # 5. Commit & push generated bundle.json
