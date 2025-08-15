@@ -257,7 +257,7 @@ jobs:
           }
 
           # Zapis do bundle.json
-          with open("bundle.json", "w", encoding="utf-8") as f:
+          with open("bundle2.json", "w", encoding="utf-8") as f:
               json.dump(bundle, f, ensure_ascii=False, indent=2)
           
           # Dodaj log, aby sprawdzić, ile patchy zostało zapisanych
