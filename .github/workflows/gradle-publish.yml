@@ -33,11 +33,41 @@ jobs:
           python - << 'EOF'
           import json
           import requests
+          import sys # Import sys for better error handling
 
-          # Pobierz patche z repo Emiferpro/revanced-patches
-          url = "https://raw.githubusercontent.com/Emiferpro/revanced-patches/main/patches-list.json"
-          response = requests.get(url)
-          patches = response.json() if response.status_code == 200 else []
+          # Zmieniony URL na źródło z patcheami ReVanced
+          # Możesz użyć alternatywnych źródeł, np.
+          # "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/main/ReVanced-Patches-Bundle.json"
+          # "https://raw.githubusercontent.com/inotia00/revanced-patches/main/patches.json"
+          url = "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/main/ReVanced-Patches-Bundle.json" 
+          
+          try:
+              response = requests.get(url)
+              response.raise_for_status() # Sprawdź, czy żądanie było udane (status code 2xx)
+              patches_data = response.json()
+              
+              # W zależności od struktury JSON ze źródła, może być konieczne 
+              # dostosowanie, aby uzyskać samą listę patchy.
+              # Przykładowo, jeśli JSON ma klucz "patches", użyj patches_data["patches"].
+              # Jeśli jest to bezpośrednio lista, użyj patches_data.
+              
+              # Sprawdź strukturę JSON z Jman-Github/ReVanced-Patch-Bundles
+              # Zakładamy, że to bezpośrednio lista patchy lub ma klucz 'patches'
+              if isinstance(patches_data, list):
+                  patches = patches_data
+              elif isinstance(patches_data, dict) and "patches" in patches_data:
+                  patches = patches_data["patches"]
+              else:
+                  print(f"Ostrzeżenie: Nieoczekiwana struktura JSON z {url}. Oczekiwano listy lub obiektu z kluczem 'patches'.", file=sys.stderr)
+                  patches = []
+
+          except requests.exceptions.RequestException as e:
+              print(f"Błąd podczas pobierania patchy z {url}: {e}", file=sys.stderr)
+              patches = []
+          except json.JSONDecodeError as e:
+              print(f"Błąd dekodowania JSON z {url}: {e}", file=sys.stderr)
+              print(f"Zawartość odpowiedzi: {response.text[:500]}...", file=sys.stderr) # Wypisz część odpowiedzi
+              patches = []
 
           # Przygotowanie bundle
           bundle = {
@@ -48,6 +78,9 @@ jobs:
           # Zapis do bundle.json
           with open("bundle.json", "w", encoding="utf-8") as f:
               json.dump(bundle, f, ensure_ascii=False, indent=2)
+          
+          # Dodaj log, aby sprawdzić, ile patchy zostało zapisanych
+          print(f"Zapisano {len(patches)} patchy do bundle.json")
           EOF
 
       # 5. Commit & push generated bundle.json
