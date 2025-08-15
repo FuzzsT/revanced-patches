@@ -272,29 +272,29 @@ jobs:
           final_patches_list = unique_patches
           
           # Przygotowanie finalnego bundle
-          bundle = {
+          bundles = {
               "version": "1.0",
               "patches": final_patches_list
           }
 
           # Zapis do bundle.json
-          with open("bundle.json", "w", encoding="utf-8") as f:
-              json.dump(bundle, f, ensure_ascii=False, indent=2)
+          with open("bundles.json", "w", encoding="utf-8") as f:
+              json.dump(bundles, f, ensure_ascii=False, indent=2)
           
           # Dodaj log, aby sprawdzić, ile patchy zostało zapisanych
           print(f"\n--- Podsumowanie ---")
           print(f"Pomyślnie pobrano dane z {len(successfully_fetched_urls)}/{len(patch_urls)} źródeł.")
-          print(f"Zapisano łącznie {len(final_patches_list)} unikalnych patchy do bundle.json (przed de-duplikacją było {len(all_patches)}).")
+          print(f"Zapisano łącznie {len(final_patches_list)} unikalnych patchy do bundles.json (przed de-duplikacją było {len(all_patches)}).")
           if len(successfully_fetched_urls) < len(patch_urls):
               print("Niektóre URL-e mogły się nie powieść. Sprawdź logi powyżej.")
 
           EOF
 
       # 5. Commit & push generated bundle.json
-      - name: Commit bundle.json
+      - name: Commit bundles.json
         run: |
           git config --local user.name "github-actions[bot]"
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git add bundle.json
-          git commit -m "Update bundle.json [ci skip]" || echo "No changes to commit"
+          git add bundles.json
+          git commit -m "Update bundles.json [ci skip]" || echo "No changes to commit"
           git push
