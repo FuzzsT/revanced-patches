@@ -25,7 +25,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests
+          pip install requests requests-toolbelt # Dodano requests-toolbelt dla retries
 
       # 4. Generate bundle.json directly in workflow
       - name: Generate bundle.json
@@ -34,6 +34,20 @@ jobs:
           import json
           import requests
           import sys
+          from requests.adapters import HTTPAdapter
+          from urllib3.util.retry import Retry
+
+          # Konfiguracja ponawiania prób
+          retries = Retry(total=5,  # Całkowita liczba ponownych prób
+                          backoff_factor=0.5, # Czas oczekiwania między próbami (0.5s, 1s, 2s...)
+                          status_forcelist=[500, 502, 503, 504], # Kody statusu, dla których ponawiać
+                          allowed_methods=["GET"]) # Metody HTTP, dla których ponawiać
+
+          adapter = HTTPAdapter(max_retries=retries)
+          http = requests.Session()
+          http.mount("https://", adapter)
+          http.mount("http://", adapter)
+
 
           # Lista wszystkich URL-i do patchy, zebrana z Twojego obszernego zestawienia
           patch_urls = [
@@ -171,7 +185,7 @@ jobs:
               # Brosssh-Patches-Bundle (poprawiony adres URL dla Dev)
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/brosssh-patch-bundles/brosssh-latest-patches-bundle.json",
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/brosssh-patch-bundles/brosssh-stable-patches-bundle.json",
-              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/brosssh-patch-bundles/brosssh-dev-patches-bundle.json", # TUTAJ POPRAWIONO LITERÓWKĘ
+              "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/brosssh-patch-bundles/brosssh-dev-patches-bundle.json", 
 
               # Hoo-dles-Patches-Bundle
               "https://raw.githubusercontent.com/Jman-Github/ReVanced-Patch-Bundles/bundles/patch-bundles/hoo-dles-patch-bundles/hoo-dles-latest-patches-bundle.json",
@@ -195,7 +209,8 @@ jobs:
           for url in patch_urls:
               print(f"Pobieranie patchy z: {url}")
               try:
-                  response = requests.get(url, timeout=10) # Dodano timeout
+                  # Użyj sesji z retries
+                  response = http.get(url, timeout=15) # Zwiększono timeout na wszelki wypadek
                   response.raise_for_status() # Sprawdź, czy żądanie było udane (status code 2xx)
                   patches_data = response.json()
                   
@@ -208,15 +223,15 @@ jobs:
                       all_patches.extend(patches_data["patches"])
                       current_patches_count = len(patches_data["patches"])
                   else:
+                      # Jeśli struktura jest nieoczekiwana, ale nie jest błędem JSON, to może być problem z formatem.
+                      # Wypisz zawartość, aby pomóc w debugowaniu.
                       print(f"  Ostrzeżenie: Nieoczekiwana struktura JSON z {url}. Oczekiwano listy lub obiektu z kluczem 'patches'.", file=sys.stderr)
+                      print(f"  Zawartość odpowiedzi (początek): {response.text[:500]}...", file=sys.stderr)
                   
                   if current_patches_count > 0:
                       print(f"  Pobrano {current_patches_count} patchy z {url}.")
                       successfully_fetched_urls.append(url)
                   else:
-                      # Działa, jeśli jest to pusta lista lub słownik z pustą listą, ale też gdy struktura jest nieoczekiwana.
-                      # Komunikat "Brak patchy" jest tutaj bardziej precyzyjny niż "Nieprawidłowa struktura",
-                      # chyba że `patches_data` było czymś totalnie innym niż list/dict.
                       print(f"  Brak patchy lub nieoczekiwana struktura z {url} (liczba pobranych: {current_patches_count}).")
 
               except requests.exceptions.Timeout:
@@ -232,21 +247,27 @@ jobs:
 
           # Usuwanie duplikatów
           unique_patches = []
-          seen_patch_names = set() 
-          
+          seen_patch_ids = set() # Zmieniono nazwę na bardziej ogólną
+
           for patch in all_patches:
-              if isinstance(patch, dict): # SPRAWDZANIE TYPU TUTAJ!
-                  patch_id = patch.get("name") # Użyj nazwy jako ID
-                  if patch_id and patch_id not in seen_patch_names:
+              if isinstance(patch, dict): 
+                  # Tworzenie bardziej unikalnego ID dla patcha
+                  # Możesz dostosować to ID, jeśli 'name' nie jest wystarczająco unikalne
+                  # np. patch_id = f"{patch.get('name')}-{patch.get('target_package', '')}-{patch.get('min_version', '')}"
+                  patch_id = patch.get("name") 
+                  
+                  if patch_id and patch_id not in seen_patch_ids:
                       unique_patches.append(patch)
-                      seen_patch_names.add(patch_id)
+                      seen_patch_ids.add(patch_id)
                   elif not patch_id:
                       # Jeśli patch nie ma nazwy, zawsze go dodaj (lub zaimplementuj inną logikę)
+                      # Warto rozważyć, czy patche bez nazwy powinny być dodawane.
+                      print(f"  Ostrzeżenie: Patch bez nazwy znaleziony: {patch}. Dodaję bez de-duplikacji.", file=sys.stderr)
                       unique_patches.append(patch)
               else:
                   # Ignoruj elementy, które nie są słownikami (np. stringi, inty, None)
                   print(f"  Ostrzeżenie: Znaleziono nieprawidłowy element w liście patchy (nie jest słownikiem): {patch}. Pomijam.", file=sys.stderr)
-                  pass # Nie dodawaj tego elementu do listy unikalnych patchy
+                  pass 
           
           final_patches_list = unique_patches
           
