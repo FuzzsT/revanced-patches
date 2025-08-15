@@ -1,0 +1,60 @@
+name: Generate ReVanced Patch Bundle
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  generate-bundle:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout repozytorium
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Setup Python
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      # 4. Generate bundle.json directly in workflow
+      - name: Generate bundle.json
+        run: |
+          python - << 'EOF'
+          import json
+          import requests
+
+          # Pobierz patche z repo Emiferpro/revanced-patches
+          url = "https://raw.githubusercontent.com/Emiferpro/revanced-patches/main/patches-list.json"
+          response = requests.get(url)
+          patches = response.json() if response.status_code == 200 else []
+
+          # Przygotowanie bundle
+          bundle = {
+              "version": "1.0",
+              "patches": patches
+          }
+
+          # Zapis do bundle.json
+          with open("bundle.json", "w", encoding="utf-8") as f:
+              json.dump(bundle, f, ensure_ascii=False, indent=2)
+          EOF
+
+      # 5. Commit & push generated bundle.json
+      - name: Commit bundle.json
+        run: |
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git add bundle.json
+          git commit -m "Update bundle.json [ci skip]" || echo "No changes to commit"
+          git push
